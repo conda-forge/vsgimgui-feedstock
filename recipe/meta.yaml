@@ -13,7 +13,7 @@ source:
       - patches/0003-Find-imgui-and-implot-in-package-config-when-system-.patch
 
 build:
-  number: 0
+  number: 1
   run_exports:
     - {{ pin_subpackage('vsgimgui', max_pin='x.x') }}
 
@@ -25,12 +25,14 @@ requirements:
     - ninja  # [not win]
     - pkgconfig  # [linux]
   host:
-    - imgui
-    - implot
+    - imgui >=1.91.8,<1.91.9.0a0
+    - implot >=0.16,<0.17
     - libvulkan-headers
     - libvulkan-loader
     - vulkanscenegraph
   run:
+    - imgui >=1.91.8,<1.91.9.0a0
+    - implot >=0.16,<0.17
     - libvulkan-loader
     - vulkanscenegraph
 
