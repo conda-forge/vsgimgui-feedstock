@@ -13,7 +13,7 @@ source:
       - patches/0003-Find-imgui-and-implot-in-package-config-when-system-.patch
 
 build:
-  number: 0
+  number: 1
   run_exports:
     - {{ pin_subpackage('vsgimgui', max_pin='x.x') }}
 
@@ -25,21 +25,27 @@ requirements:
     - ninja  # [not win]
     - pkgconfig  # [linux]
   host:
-    - imgui
-    - implot
+    - imgui >=1.91.8,<1.91.9.0a0
+    - implot >=0.16,<0.17
     - libvulkan-headers
     - libvulkan-loader
     - vulkanscenegraph
   run:
+    - imgui >=1.91.8,<1.91.9.0a0
+    - implot >=0.16,<0.17
     - libvulkan-loader
     - vulkanscenegraph
 
 test:
   commands:
     - test -f $PREFIX/include/vsgImGui/Export.h  # [not win]
+    - test -f $PREFIX/include/vsgImGui/imgui.h  # [not win]
+    - test -f $PREFIX/include/vsgImGui/implot.h  # [not win]
     - test -f $PREFIX/lib/libvsgImGui${SHLIB_EXT}  # [not win]
     - test -f $PREFIX/lib/cmake/vsgImGui/vsgImGuiConfig.cmake  # [not win]
     - if not exist %PREFIX%\\Library\\include\\vsgImGui\\Export.h exit 1  # [win]
+    - if not exist %PREFIX%\\Library\\include\\vsgImGui\\imgui.h exit 1  # [win]
+    - if not exist %PREFIX%\\Library\\include\\vsgImGui\\implot.h exit 1  # [win]
     - if not exist %PREFIX%\\Library\\lib\\vsgImGui.lib exit 1  # [win]
     - if not exist %PREFIX%\\Library\\bin\\vsgImGui.dll exit 1  # [win]
     - if not exist %PREFIX%\\Library\\lib\\cmake\\vsgImGui\\vsgImGuiConfig.cmake exit 1  # [win]

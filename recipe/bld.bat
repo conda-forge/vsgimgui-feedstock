@@ -1,6 +1,7 @@
 @echo on
 
-:: Remove existing imgui and implot headers to use the external ones installed by their Conda packages
+:: Remove vendored headers while building so sources use the external headers
+:: installed by the conda imgui and implot packages.
 del /q include\vsgImGui\imgui.h
 del /q include\vsgImGui\implot.h
 if errorlevel 1 exit 1
@@ -15,6 +16,17 @@ if errorlevel 1 exit 1
 
 cmake --build build --parallel --config Release
 if errorlevel 1 exit 1
+
+:: Install compatibility shims for downstreams that still include the historical
+:: vsgImGui paths while continuing to use the external conda headers.
+(
+  echo #pragma once
+  echo #include ^<imgui.h^>
+) > include\vsgImGui\imgui.h
+(
+  echo #pragma once
+  echo #include ^<implot.h^>
+) > include\vsgImGui\implot.h
 
 cmake --install build --config Release
 if errorlevel 1 exit 1
