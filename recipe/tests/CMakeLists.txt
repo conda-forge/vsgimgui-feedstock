@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.7)
 
-project(vsghelloworld)
+project(vsghelloworld LANGUAGES CXX)
 
 include(CTest)
 
