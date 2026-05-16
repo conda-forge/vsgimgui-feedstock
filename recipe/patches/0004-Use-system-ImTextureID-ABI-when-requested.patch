@@ -1,0 +1,89 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Jeongseok Lee <jeongseok@meta.com>
+Date: Sat, 16 May 2026 07:30:00 -0700
+Subject: [PATCH] Use system ImTextureID ABI when requested
+
+---
+ include/vsgImGui/Export.h   |  8 ++++++--
+ src/CMakeLists.txt          |  8 ++++++++
+ src/vsgImGui/Texture.cpp    | 19 ++++++++++++++++++-
+ 3 files changed, 32 insertions(+), 3 deletions(-)
+
+diff --git a/include/vsgImGui/Export.h b/include/vsgImGui/Export.h
+index 95eb49c..948c192 100644
+--- a/include/vsgImGui/Export.h
++++ b/include/vsgImGui/Export.h
+@@ -34,11 +34,17 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+ #    define VSGIMGUI_DECLSPEC
+ #endif
+ 
++#ifndef VSG_IMGUI_USE_SYSTEM_IMGUI
+ #define IMGUI_API VSGIMGUI_DECLSPEC
++#endif
++#ifndef VSG_IMGUI_USE_SYSTEM_IMPLOT
+ #define IMPLOT_API VSGIMGUI_DECLSPEC
++#endif
+ 
+ #include <vulkan/vulkan.h>
++#ifndef VSG_IMGUI_USE_SYSTEM_IMGUI
+ #define ImTextureID VkDescriptorSet
++#endif
+ 
+ #include <vsg/maths/vec2.h>
+ #include <vsg/maths/vec4.h>
+diff --git a/src/CMakeLists.txt b/src/CMakeLists.txt
+index 97720b2..a73b780 100644
+--- a/src/CMakeLists.txt
++++ b/src/CMakeLists.txt
+@@ -87,6 +87,14 @@ set_property(TARGET vsgImGui PROPERTY CXX_STANDARD 17)
+ 
+ target_compile_definitions(vsgImGui PRIVATE ${EXTRA_DEFINES})
+ 
++if(VSG_IMGUI_USE_SYSTEM_IMGUI)
++    target_compile_definitions(vsgImGui PUBLIC VSG_IMGUI_USE_SYSTEM_IMGUI)
++endif()
++
++if(VSG_IMGUI_USE_SYSTEM_IMPLOT)
++    target_compile_definitions(vsgImGui PUBLIC VSG_IMGUI_USE_SYSTEM_IMPLOT)
++endif()
++
+ target_include_directories(vsgImGui PUBLIC
+     $<BUILD_INTERFACE:${VSGIMGUI_SOURCE_DIR}/include>
+     $<BUILD_INTERFACE:${VSGIMGUI_SOURCE_DIR}/include/vsgImGui>
+diff --git a/src/vsgImGui/Texture.cpp b/src/vsgImGui/Texture.cpp
+index 1619866..49fa04b 100644
+--- a/src/vsgImGui/Texture.cpp
++++ b/src/vsgImGui/Texture.cpp
+@@ -24,10 +24,25 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+ 
+ #include <vsg/state/DescriptorImage.h>
+ 
++#include <cstdint>
++
+ using namespace vsgImGui;
+ 
+ namespace
+ {
++    ImTextureID descriptorSetToTextureID(VkDescriptorSet descriptorSet)
++    {
++#ifdef VSG_IMGUI_USE_SYSTEM_IMGUI
++#    if VK_USE_64_BIT_PTR_DEFINES == 1
++        return static_cast<ImTextureID>(reinterpret_cast<std::uintptr_t>(descriptorSet));
++#    else
++        return static_cast<ImTextureID>(descriptorSet);
++#    endif
++#else
++        return static_cast<ImTextureID>(descriptorSet);
++#endif
++    }
++
+     auto getDefaultSampler()
+     {
+         auto sampler = vsg::Sampler::create();
+@@ -75,5 +92,5 @@ void Texture::compile(vsg::Context& context)
+ 
+ ImTextureID Texture::id(uint32_t deviceID) const
+ {
+-    return descriptorSet ? static_cast<ImTextureID>(descriptorSet->vk(deviceID)) : ImTextureID{};
++    return descriptorSet ? descriptorSetToTextureID(descriptorSet->vk(deviceID)) : ImTextureID{};
+ }
