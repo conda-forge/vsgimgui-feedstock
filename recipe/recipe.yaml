@@ -83,5 +83,6 @@ about:
   license_file: LICENSE.md
 
 extra:
+  feedstock-name: vsgimgui
   recipe-maintainers:
     - jeongseok-meta
