@@ -1,6 +1,6 @@
 context:
   name: vsgimgui
-  version: "0.8.0"
+  version: "0.9.0"
 
 package:
   name: ${{ name }}
@@ -8,7 +8,7 @@ package:
 
 source:
   url: https://github.com/vsg-dev/vsgImGui/archive/v${{ version }}.tar.gz
-  sha256: 9e06a62f7091e496c67ea575c5179da038707413ddcfeae5919e94e448b58e39
+  sha256: ee97df4b95c98a14348eef7c77504ad3ed27620423edbed7e1a4ad8c99986465
   patches:
     - patches/0001-Add-options-to-use-system-dependencies.patch
     - patches/0003-Find-imgui-and-implot-in-package-config-when-system-.patch
